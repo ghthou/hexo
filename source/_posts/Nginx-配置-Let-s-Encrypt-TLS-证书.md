@@ -1,7 +1,7 @@
 title: Nginx 配置 Let's Encrypt TLS 证书
 author: ghthou
 tags:
-  - nginx
+  - Nginx
   - TLS
 categories:
   - Nginx
