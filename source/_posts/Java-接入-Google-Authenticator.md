@@ -71,9 +71,8 @@ public static String createGoogleAuthQRCodeData(String secret, String account, S
 ```
 此时再根据上述信息生成二维码, 二维码生成方式可参考以下两种方案
 
-- [生成二维码之 Java (Google zxing) 篇](http://www.jianshu.com/p/05e9ee773898)
-- [生成二维码之 JavaScript (jquery-qrcode) 篇](http://www.jianshu.com/p/f2bf33e0fcb2)
-如何选择可查看 [关于二维码生成的一些思考](http://www.jianshu.com/p/2f88df6bf9f1)
+- [使用 zxing 生成二维码.md](/2018/01/13/使用-zxing-生成二维码/)
+- [使用 jQuery-qrcode 生成二维码.md](/2018/01/13/使用-jQuery-qrcode-生成二维码/)
 
 此时选择使用 `Java` 的方式返回一个二维码图片流
 ```java

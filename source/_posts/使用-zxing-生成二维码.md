@@ -109,5 +109,5 @@ date: 2018-01-13 13:01:00
     }
     ```
     - [QRCodeUtils.java 下载](https://raw.githubusercontent.com/ghthou/Google-Authenticator/master/src/main/java/z/study/googleAuthenticator/util/QRCodeUtils.java)(右键另存为)
-    - JavaScript 生成二维码可参考 [生成二维码之 JavaScript(jquery-qrcode) 篇](http://www.jianshu.com/p/f2bf33e0fcb2)
-    - 如果想生成带 LOGO 的二维码可参考 [生成带 LOGO 的二维码](http://www.jianshu.com/p/0cd6c56ea725)
+    - JavaScript 生成二维码可参考 [使用 jQuery-qrcode 生成二维码.md](/2018/01/13/使用-jQuery-qrcode-生成二维码/)
+    - 如果想生成带 LOGO 的二维码可参考 [生成带 LOGO 的二维码](/2018/01/13/生成带-LOGO-的二维码/)
