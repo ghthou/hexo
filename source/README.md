@@ -1,4 +1,4 @@
-### hexo 博客静态文件仓库
+### hexo 博客源码
 
 博客地址 [ghthou.github.io](https://ghthou.github.io/)
 
