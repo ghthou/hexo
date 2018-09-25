@@ -1,6 +1,5 @@
 ---
 title: 我的 Linxu(CentOS) 初始安装后配置
-author: ghthou
 date: 2018-09-22 17:27:55
 tags:
   - Linxu
