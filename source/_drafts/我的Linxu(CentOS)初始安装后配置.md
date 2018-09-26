@@ -1,14 +1,10 @@
----
 title: 我的 Linxu(CentOS) 初始安装后配置
-date: 2018-09-22 17:27:55
 tags:
   - Linxu
 categories:
   - Linxu
+date: 2018-09-22 17:27:00
 ---
-
-[TOC]
-
 ### 基础配置
 
 主要使用阿里云的服务
@@ -215,4 +211,3 @@ sudo curl -L https://raw.githubusercontent.com/docker/compose/1.22.0/contrib/com
 [阿里公共 DNS 配置说明](http://www.alidns.com/setup/#linux)
 
 [阿里云 docker 镜像](https://yq.aliyun.com/articles/110806)
-
