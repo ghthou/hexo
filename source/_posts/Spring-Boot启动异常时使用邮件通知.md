@@ -318,6 +318,10 @@ com.github.ghthou.startexceptionnotifications.diagnostics.analyzer.ExceptionFail
 
 由此可知如果异常是在 `ApplicationStartedEvent` 事件发生之前,则无法发送邮件
 
+还有一种办法就是手动创建发送邮件的相关 `bean` ,比如解析配置文件中的邮件配置,然后创建 `JavaMailSender` 对象(见 `MailSenderPropertiesConfiguration`),再执行发送邮件操作,这样可以不依赖 `Environment`, `BeanFactory` 等对象
+
+同时如果觉得邮件通知不够及时或不够多样,你也可以在 `NotificationsFailureAnalysisReporter.report` 方法中自定义通知处理,比如发送短信,微信,钉钉通知等
+
 ### 源码
 
 [GitHub](https://github.com/ghthou/spring-boot-start-exception-notifications)

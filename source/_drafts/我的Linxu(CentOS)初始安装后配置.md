@@ -1,9 +1,10 @@
+---
 title: 我的 Linxu(CentOS) 初始安装后配置
+date: 2018-09-22 17:27:00
 tags:
   - Linxu
 categories:
   - Linxu
-date: 2018-09-22 17:27:00
 ---
 ### 基础配置
 
@@ -12,6 +13,8 @@ date: 2018-09-22 17:27:00
 #### DNS
 
 ```bash
+mv /etc/resolv.conf /etc/resolv.conf.backup
+
 echo "nameserver 223.5.5.5" | tee /etc/resolv.conf
 echo "nameserver 223.6.6.6" | tee -a /etc/resolv.conf
 ```
@@ -60,6 +63,8 @@ mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
 #### NTP
 
 ```bash
+mv /etc/ntp.conf /etc/ntp.conf.backup
+
 echo "driftfile  /var/lib/ntp/drift" | tee /etc/ntp.conf
 echo "pidfile   /var/run/ntpd.pid" | tee -a /etc/ntp.conf
 echo "logfile /var/log/ntp.log" | tee -a /etc/ntp.conf
