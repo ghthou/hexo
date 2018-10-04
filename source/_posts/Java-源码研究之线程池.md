@@ -1,5 +1,5 @@
+---
 title: Java 源码研究之线程池
-author: ghthou
 tags:
   - Java
   - 线程池
