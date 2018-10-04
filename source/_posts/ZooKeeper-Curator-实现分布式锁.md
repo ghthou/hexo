@@ -1,5 +1,5 @@
+---
 title: ZooKeeper + Curator-实现分布式锁
-author: ghthou
 tags:
   - Java
 categories:

@@ -1,5 +1,5 @@
+---
 title: 生成带 LOGO 的二维码
-author: ghthou
 tags:
   - Java
   - QRcode

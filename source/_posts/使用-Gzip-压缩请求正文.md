@@ -1,5 +1,5 @@
+---
 title: 使用 gzip 压缩请求正文
-author: ghthou
 tags:
   - Java
   - Gzip

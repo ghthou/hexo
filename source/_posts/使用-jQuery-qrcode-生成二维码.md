@@ -1,5 +1,5 @@
+---
 title: 使用 jQuery-qrcode 生成二维码
-author: ghthou
 tags:
   - JavaScript
   - QRcode

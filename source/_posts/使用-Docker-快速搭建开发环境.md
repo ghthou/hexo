@@ -1,5 +1,5 @@
+---
 title: 使用 Docker 快速搭建开发环境
-author: ghthou
 tags:
   - Docker
 categories:

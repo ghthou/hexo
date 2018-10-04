@@ -1,5 +1,5 @@
+---
 title: IntelliJ IDEA 使用 FindBugs 进行代码分析
-author: ghthou
 tags:
   - Java
 categories:
@@ -20,15 +20,15 @@ FindBugs 是一个使用静态分析来 ** 查找 Java 代码中的错误 ** 的
 - 在输入框搜索 `findbugs`
 - 选择 `FindBugs-IDEA`
 - 此时右边红框位置会有一个绿色的 `Install` 按钮 (下面这张图是已经安装的情况), 点击安装即可, 安装完成后需要重启 IDEA
-![IDEA 安装 FindBugs 插件](/images/IntelliJ-IDEA-使用-FindBugs-进行代码分析/IDEA安装FindBugs插件.png)
+  ![IDEA 安装 FindBugs 插件](/images/IntelliJ-IDEA-使用-FindBugs-进行代码分析/IDEA安装FindBugs插件.png)
 
 ### [FindBugs-IDEA](http://andrepdo.github.io/findbugs-idea/) 插件使用介绍
 - `Ctrl+Shift+A` 快捷键打开 Find Action 搜索面板
 - 在搜索框输入 `findbugs` 进行搜索
 - 点击下方红框的 `FindBugs-IDEA` 即可打开插件面板
-![打开 FindBugs 插件](/images/IntelliJ-IDEA-使用-FindBugs-进行代码分析/打开FindBugs插件.png)
-插件面板按钮说明
-![FindBugs 面板](/images/IntelliJ-IDEA-使用-FindBugs-进行代码分析/FindBugs面板.png)
+  ![打开 FindBugs 插件](/images/IntelliJ-IDEA-使用-FindBugs-进行代码分析/打开FindBugs插件.png)
+  插件面板按钮说明
+  ![FindBugs 面板](/images/IntelliJ-IDEA-使用-FindBugs-进行代码分析/FindBugs面板.png)
 1. 分析选中的 Java 文件
 2. 分析在光标所在的类
 3. 分析选中的包
@@ -97,7 +97,7 @@ public class FindBugsDemo {
 2. Troubling 不好的, 可能会引发不良后果
 3. Scary **严重问题**, 在某种情况下一定会出现问题
 4. Scariest **非常严重**, 已经影响到当前程序功能
-可以按照严重级别倒序进行修复, 如果时间允许, 可以将 `Of Concren` 中的问题也一并修复
+     可以按照严重级别倒序进行修复, 如果时间允许, 可以将 `Of Concren` 中的问题也一并修复
 
 下面对具体提示的 BUG 进行分析 (黄色编号)
 1.Random object created and used only once (Random 对象创建后只使用一次)

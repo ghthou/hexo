@@ -1,9 +1,9 @@
 ---
-title: Spring-Boot 启动异常时使用邮件通知
+title: Spring Boot 启动异常时使用邮件通知
 date: 2018-09-25 19:16:47
 tags:
   - Java
-  - Spring-Boot
+  - Spring Boot
 categories:
   - Java
 ---

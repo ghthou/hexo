@@ -1,6 +1,5 @@
 ---
 title: Apache Common Lang 学习之 concurrent 包
-author: ghthou
 tags:
   - Java
   - Common Lang
@@ -11,7 +10,7 @@ date: 2018-01-14 21:14:27
 ---
 
 > 标准的 Java 库不能提供足够的方法来操纵其核心类,所以 [Apache Commons Lang](http://commons.apache.org/proper/commons-lang/) 为我们提供了这些额外的方法
-本文便介绍 [Apache Commons Lang](http://commons.apache.org/proper/commons-lang/) 中 concurrent 包的使用说明
+> 本文便介绍 [Apache Commons Lang](http://commons.apache.org/proper/commons-lang/) 中 concurrent 包的使用说明
 
 # 引入 jar 包
 

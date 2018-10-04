@@ -1,9 +1,9 @@
 ---
-title: 使用 Spring-Boot-Admin 管理 Spring-Boot 项目
+title: 使用 Spring Boot Admin 管理 Spring Boot 项目
 date: 2018-09-26 21:08:26
 tags:
   - Java
-  - Spring-Boot
+  - Spring Boot
 categories:
   - Java
 ---

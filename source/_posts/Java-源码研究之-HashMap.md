@@ -1,5 +1,5 @@
+---
 title: Java 源码研究之 HashMap
-author: ghthou
 tags:
   - Java
   - HashMap

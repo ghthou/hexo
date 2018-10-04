@@ -1,5 +1,5 @@
+---
 title: 使用 SiteMesh3 完善页面布局
-author: ghthou
 tags:
   - Java
   - SiteMesh

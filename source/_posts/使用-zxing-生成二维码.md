@@ -1,5 +1,5 @@
+---
 title: 使用 zxing 生成二维码
-author: ghthou
 tags:
   - Java
   - QRcode

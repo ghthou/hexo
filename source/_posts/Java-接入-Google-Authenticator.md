@@ -1,5 +1,5 @@
+---
 title: Java 接入 Google Authenticator
-author: ghthou
 tags:
   - Java
   - Google Authenticator

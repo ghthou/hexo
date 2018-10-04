@@ -1,5 +1,5 @@
+---
 title: IntelliJ IDEA 使用 lombok 减少冗长代码
-author: ghthou
 tags:
   - Java
   - IntelliJ IDEA
