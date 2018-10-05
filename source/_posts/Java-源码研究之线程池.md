@@ -20,17 +20,17 @@ date: 2018-01-13 13:09:00
 首先需要了解 `AtomicInteger` 类型的 `ctl` 变量,这个变量以32位二进制的方式描述俩种信息
 
 1. 前三位表示线程池的状态
-    1. RUNNING(111) 接受新任务并处理排队的任务
-    2. SHUTDOWN(000) 不接受新任务，而是处理排队的任务
-    3. STOP(011) 不接受新任务，不处理排队的任务和中断进行中的任务
-    4. TIDYING(100) 所有任务已终止，workerCount 为零， 线程过渡到状态 TIDYING 将运行 terminate() 钩子方法
-    5. TERMINATED(110) terminated() 已完成
+  - RUNNING(111) 接受新任务并处理排队的任务
+  - SHUTDOWN(000) 不接受新任务，而是处理排队的任务
+  - STOP(011) 不接受新任务，不处理排队的任务和中断进行中的任务
+  - TIDYING(100) 所有任务已终止，workerCount 为零， 线程过渡到状态 TIDYING 将运行 terminate() 钩子方法
+  - TERMINATED(110) terminated() 已完成
 2. 后二十九位表示当前工作的线程数(`[0,(2^29)-1]`)
 
 任务执行有俩种方法,其中 `execute` 方法由 `ThreadPoolExecutor` 提供
 `submit` 方法继承自 `AbstractExecutorService` 的实现
 
-`java.util.concurrent.ThreadPoolExecutor#execute(Runnable command)`
+#### java.util.concurrent.ThreadPoolExecutor#execute(Runnable command)
 ```java
 public void execute(Runnable command) {
     // 参数校验
@@ -61,7 +61,7 @@ public void execute(Runnable command) {
 }            
 ```
 
-`java.util.concurrent.ThreadPoolExecutor#addWorker(Runnable firstTask, boolean core)`
+#### java.util.concurrent.ThreadPoolExecutor#addWorker(Runnable firstTask, boolean core)
 ```java
 private boolean addWorker(Runnable firstTask, boolean core) {
     retry:
@@ -141,8 +141,7 @@ private boolean addWorker(Runnable firstTask, boolean core) {
 }
 ```
 
-`java.util.concurrent.ThreadPoolExecutor#runWorker(Worker w)`
-
+#### java.util.concurrent.ThreadPoolExecutor#runWorker(Worker w)
 ```java
 final void runWorker(Worker w) {
     // 获取当前的线程
@@ -197,7 +196,7 @@ final void runWorker(Worker w) {
 }
 
 ```
-`java.util.concurrent.ThreadPoolExecutor#getTask()`
+#### java.util.concurrent.ThreadPoolExecutor#getTask()
 ```java
 private Runnable getTask() {
     boolean timedOut = false; // Did the last poll() time out? 
@@ -249,7 +248,7 @@ private Runnable getTask() {
 }
 ```
 
-`java.util.concurrent.AbstractExecutorService#submit(Callable<T> task)`
+#### java.util.concurrent.AbstractExecutorService#submit(Callable<T> task)
 ```java
 public <T> Future<T> submit(Callable<T> task) {
     if (task == null) throw new NullPointerException();
@@ -283,7 +282,7 @@ NEW -> CANCELLED
 NEW -> INTERRUPTING -> INTERRUPTED
 
 
-`java.util.concurrent.FutureTask#get()`
+#### java.util.concurrent.FutureTask#get()
 ```java
 public V get() throws InterruptedException, ExecutionException {
     int s = state;
@@ -293,7 +292,7 @@ public V get() throws InterruptedException, ExecutionException {
     return report(s);// 否则获取返回的状态值,进行判断后返回
 }
 ```
-`java.util.concurrent.FutureTask#report(int s)`
+#### java.util.concurrent.FutureTask#report(int s)
 ```java
 private V report(int s) throws ExecutionException {
     Object x = outcome;
@@ -305,7 +304,7 @@ private V report(int s) throws ExecutionException {
 }
 ```
 
-`java.util.concurrent.FutureTask#awaitDone(boolean timed, long nanos)`
+#### java.util.concurrent.FutureTask#awaitDone(boolean timed, long nanos)
 ```java
 private int awaitDone(boolean timed, long nanos)
     throws InterruptedException {
@@ -356,7 +355,7 @@ private int awaitDone(boolean timed, long nanos)
 ```
 在 `java.util.concurrent.ThreadPoolExecutor#runWorker(Worker w)` 方法中任务执行是直接调用 `run` 方法,因为`FutureTask`需要获取任务运行结果及收集异常,所以对 `run` 方法进行了包装
 在构造 FutureTask 时参数允许接受 Callable 与 Runnable 类型,实际上他会将 Runnable 类型转为一个 Callable 类型,然后使用 `call()` 方法进行调用
-`java.util.concurrent.FutureTask#run()`
+#### java.util.concurrent.FutureTask#run()
 ```java
 public void run() {
     // 检查线程状态,如果不是 NEW 状态或 runner 变量不为 null 结束该方法
@@ -397,7 +396,7 @@ public void run() {
     }
 }
 ```
-`java.util.concurrent.FutureTask#set(V v)`
+#### java.util.concurrent.FutureTask#set(V v)
 ```java
 protected void set(V v) {
     // 更新状态为 COMPLETING
@@ -412,7 +411,7 @@ protected void set(V v) {
 }
 ```
 `setException(Throwable t)` 方法请参考 `set(V v)`
-`java.util.concurrent.FutureTask#finishCompletion()`
+#### java.util.concurrent.FutureTask#finishCompletion()
 ```java
 private void finishCompletion() {
     // assert state > COMPLETING;

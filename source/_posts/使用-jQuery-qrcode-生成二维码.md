@@ -9,6 +9,7 @@ date: 2018-01-13 12:51:00
 ---
 > 本文讲述如何使用 [jquery-qrcode](https://github.com/jeromeetienne/jquery-qrcode) 生成二维码
 
+### 示例
 ```html
 <!-- 引入 jQuery 与 jquery.qrcode-->
 <script type="text/javascript" src="jquery-2.2.4.min.js"></script>
@@ -38,6 +39,7 @@ date: 2018-01-13 12:51:00
     })
 </script>
 ```
+### 中文乱码解决办法
 由于 qrcode 的编码原因会导致中文乱码
 如果能确保二维码中的内容为 ** 链接 **, 那么在使用前对内容进行 **encodeURI** 编码即可
 ```javascript
@@ -45,24 +47,25 @@ $("#qrcode").qrcode(encodeURI("https://google.com"));
 ```
 如果不是链接, 需要对二维码内容进行编码, 方法来源于 [http://justcoding.iteye.com/blog/2213034](http://justcoding.iteye.com/blog/2213034)
 ```javascript
-function toUtf8(str) {      
-    var out, i, len, c;      
-    out = "";      
-    len = str.length;      
-    for(i = 0; i < len; i++) {      
-        c = str.charCodeAt(i);      
-        if ((c>= 0x0001) && (c <= 0x007F)) {      
-            out += str.charAt(i);      
-        } else if (c> 0x07FF) {      
-            out += String.fromCharCode(0xE0 | ((c>> 12) & 0x0F));      
-            out += String.fromCharCode(0x80 | ((c>>  6) & 0x3F));      
-            out += String.fromCharCode(0x80 | ((c>>  0) & 0x3F));      
-        } else {      
-            out += String.fromCharCode(0xC0 | ((c>>  6) & 0x1F));      
-            out += String.fromCharCode(0x80 | ((c>>  0) & 0x3F));      
-        }      
-    }      
-    return out;      
+function toUtf8(str) {
+    var out, i, len, c;
+    out = "";
+    len = str.length;
+    for(i = 0; i < len; i++) {
+        c = str.charCodeAt(i);
+        if ((c>= 0x0001) && (c <= 0x007F)) {
+            out += str.charAt(i);
+        } else if (c> 0x07FF) {
+            out += String.fromCharCode(0xE0 | ((c>> 12) & 0x0F));
+            out += String.fromCharCode(0x80 | ((c>>  6) & 0x3F));
+            out += String.fromCharCode(0x80 | ((c>>  0) & 0x3F));
+        } else {
+            out += String.fromCharCode(0xC0 | ((c>>  6) & 0x1F));
+            out += String.fromCharCode(0x80 | ((c>>  0) & 0x3F));
+        }
+    }
+    return out;
 } 
 $("#qrcode").qrcode(toUtf8("https://google.com"));
 ```
+

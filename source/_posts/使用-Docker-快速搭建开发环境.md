@@ -25,9 +25,9 @@ date: 2018-01-13 11:14:00
 请参考 Docker 官方文档中的 [Install Docker](https://docs.docker.com/engine/installation/)
 目前 Docker 支持的系统版本如下
 ![Docker 支持的系统版本](/images/使用-Docker-快速搭建开发环境/Docker支持的系统版本.png)
-Docker 最初是在 Ubuntu 12.04 上开发实现的 [^footnote1], 另外 Docker 官网文档中的一些操作命令也是基于 Ubuntu 来讲解的, 如果有条件, 推荐使用 Ubuntu 
+Docker 最初是在 Ubuntu 12.04 上开发实现的, 另外 Docker 官网文档中的一些操作命令也是基于 Ubuntu 来讲解的, 如果有条件, 推荐使用 Ubuntu 
 Linux 安装完成后, 请查看 [Post-installation steps for Linux](https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user) 完成一些后续配置
-对于 Linux 用户需要特别注意, 如果是以非 `root` 用户运行, 需要创建 `docker` 组, 并将当前用户添加到 `docker` 组中 [^footnote2]
+对于 Linux 用户需要特别注意, 如果是以非 `root` 用户运行, 需要创建 `docker` 组, 并将当前用户添加到 `docker` 组中
 ```bash
 $ sudo groupadd docker
 $ sudo usermod -aG docker $USER
@@ -36,6 +36,7 @@ Docker 中使用的镜像都需要从网站上下载, 因为网络原因, 国内
 
 ### 使用 Docker 搭建开发环境
 现在以搭建 `mysql` 为例
+#### 搜索 `mysql` 镜像
 首先从 [hub.docker.com](https://hub.docker.com) 网站中搜索你需要的镜像, 如 `mysql`
 ![hub 搜索镜像](/images/使用-Docker-快速搭建开发环境/hub搜索镜像.png)
 其中第一个带有 `official` 单词的表明为 Dcoker 官方提供的镜像, 下面的三个为个人 / 组织上传的镜像
@@ -45,7 +46,7 @@ Docker 中使用的镜像都需要从网站上下载, 因为网络原因, 国内
 右侧的 `docker pull mysql` 是镜像的下载命令, 此时我们可以在命令行中执行该命令进行下载, 默认下载版本为 `latest`
 如果希望指定下载版本, 使用如下命令格式 `docker pull mysql:版本号 `, 如 `docker pull mysql:5.6`
 
-下载 `mysql` 镜像
+#### 下载 `mysql` 镜像
 ```bash
 $ docker pull mysql:5.7
 ```
@@ -116,11 +117,7 @@ ll -h ~/docker/data/mysql/datadir
 ** 如果希望更加系统的学习 `Docker` 信息, 请查看 [官网文档](https://docs.docker.com/)**
 如果想查看中文文档, 可以去看 [Docker —— 从入门到实践](https://www.gitbook.com/book/yeasy/docker_practice/details)
 
-相关资料
-[Docker 官方文档](https://docs.docker.com/)
-[Docker —— 从入门到实践](https://www.gitbook.com/book/yeasy/docker_practice/details)
-[labs](https://github.com/docker/labs)
-
-[^footnote1]: 参考自 [Docker — 从入门到实践](https://yeasy.gitbooks.io/docker_practice/content/introduction/what.html)
-
-[^footnote2]: 参考自 [Manage Docker as a non-root user](https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user)
+### 相关资料
+- [Docker 官方文档](https://docs.docker.com/)
+- [Docker —— 从入门到实践](https://www.gitbook.com/book/yeasy/docker_practice/details)
+- [Docker-labs](https://github.com/docker/labs)

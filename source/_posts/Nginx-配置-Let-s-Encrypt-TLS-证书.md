@@ -22,7 +22,7 @@ $ cd certbot
 ```
 克隆完成后, 此时可以通过命令获取证书
 
-- **Webroot**
+#### Webroot
 该方式适用于本机中正在运行中的项目, 无须停止服务器即可申请
 ```bash
 $ ./certbot-auto certonly --webroot -w /usr/local/nginx/html --email admin@example.com -d example.com -d www.example.com -d other.example.com
@@ -41,7 +41,7 @@ http://example.com/.well-known/acme-challenge/HGr8U1IeTW4kY_Z6UIyaakzOkyQgPr_7Ar
 `--email admin@example.com` 为申请者的 ** 邮箱 **, 在证书快过期时, 会发送通知邮件
 `-d example.com` 为要 ** 申请的域名 **, 允许存在多个, 格式为 `-d 域名 -d 域名 `, ** 但要求域名访问地址为本机 **
 
-- Standalone
+#### Standalone
 该方式需要 ** 确保 80,443 端口没有被占用 **
 ```bash
 $ ./certbot-auto certonly --standalone --email admin@example.com -d example.com -d www.example.com -d other.example.com
@@ -50,7 +50,7 @@ $ ./certbot-auto certonly --standalone --email admin@example.com -d example.com 
 `--email admin@example.com -d example.com` 参数参考 `Webroot` 方式
 如果验证没有问题, 稍候页面会弹出一个协议对话框, 点击 **Agree** 即可
 
-- Manual
+#### Manual
 该方式适用于申请证书服务器不是域名所在服务器的情况
 ```bash
 $ ./certbot-auto certonly --manual --email admin@example.com -d example.com -d www.example.com -d other.example.com
@@ -101,7 +101,7 @@ IMPORTANT NOTES:
 openssl dhparam -out /etc/letsencrypt/live/dhparams.pem 2048
 ```
 
-###nginx TSL 配置
+### nginx TSL 配置
 
 首先对 http 协议进行 301 重定向到 https 协议
 ```nginx
@@ -159,12 +159,14 @@ server {
 ```
 以上配置完成后, 重启 nginx 即可完成对 https 的切换
 
+### 证书续期
 使用以下命令即可进行 ** 续期 **, 续期成功后需要 ** Nginx 重新启动 **
 ```bash
 $ ./certbot-auto renew
 ```
 该命令只会对快到期的证书才会进行更新, 如果希望强制更新, 可以增加 `--force-renewal` 参数
 
+### 证书测试
 通过 [Qualys SSL labs](https://www.ssllabs.com/index.html) 提供的 [SSL Server Test](https://www.ssllabs.com/ssltest/index.html) 服务可以查看网站的当前配置, 以及测试网站安全评分
 另外该网站缓存了一些知名网站的测试结果, 点击以下链接可进行查看
 - [Google](https://www.ssllabs.com/ssltest/analyze.html?d=google.com&s=216.58.195.78&hideResults=on)
@@ -181,7 +183,7 @@ Mozilla 同时也提供 TSL 配置说明文档 [Security/Server Side TLS](https:
 另外也可参考 [cipherli](https://cipherli.st/) 提供的 TSL 配置模版
 除了 `ssl_ciphers` 配置外, 其他皆是参考 [Jerry Qu](https://imququ.com/) 的 [本博客 Nginx 配置之完整篇](https://imququ.com/post/my-nginx-conf.html) 一文而来
 另外一些配置的详情, 作用, 原理也可以在他的博客中进行搜索得知
-本文同时也参考了以下博客
+### 参考资料
 - [HTTPS 升级指南](http://www.ruanyifeng.com/blog/2016/08/migrate-from-http-to-https.html)
 - [更换 SSL 证书：使用 Let's Encrypt](https://www.cooppor.com/post/using-lets-encrypt-free-ssl)
 - [Let's Encrypt SSL 证书配置](http://www.jianshu.com/p/eaac0d082ba2)
