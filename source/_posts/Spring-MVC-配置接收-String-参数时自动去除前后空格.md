@@ -9,15 +9,15 @@ categories:
   - Java
 ---
 
-在接收 `String` 类型参数时,前后可能存在一些空格,如果未曾去除就直接保存的话,可能会对一些特殊的业务场景造成致命影响.为了杜绝这种情况,需要在接收参数时进行前后空格清除处理
+在接收 `String` 类型参数时，前后可能存在一些空格，如果未曾去除就直接保存的话，可能会对一些特殊的业务场景造成致命影响。为了杜绝这种情况，需要在接收参数时进行前后空格清除处理
 
-而接收`String`参数主要存在俩种情况
+而接收 `String` 参数主要存在俩种情况
 
 ### 配置
 
-#### 接收`url`或`form`表单中的参数
+#### 接收 `url` 或 `form` 表单中的参数
 
-对于这种情况,`Spring MVC` 提供了一个 `org.springframework.beans.propertyeditors.StringTrimmerEditor` 类,我们只需要在参数绑定中进行注册就行,方式如下
+对于这种情况，`Spring MVC` 提供了一个 `org.springframework.beans.propertyeditors.StringTrimmerEditor` 类，我们只需要在参数绑定中进行注册就行，方式如下
 
 ```java
 @ControllerAdvice
@@ -26,8 +26,8 @@ public class ControllerStringParamTrimConfig {
     @InitBinder
     public void initBinder(WebDataBinder binder) {
         // 创建 String trim 编辑器
-      	// 构造方法中 boolean 参数含义为如果是空白字符串,是否转换为null
-      	// 即如果为true,那么 " " 会被转换为 null,否者为 ""
+          // 构造方法中 boolean 参数含义为如果是空白字符串,是否转换为null
+          // 即如果为true,那么 " " 会被转换为 null,否者为 ""
         StringTrimmerEditor propertyEditor = new StringTrimmerEditor(false);
         // 为 String 类对象注册编辑器
         binder.registerCustomEditor(String.class, propertyEditor);
@@ -37,7 +37,7 @@ public class ControllerStringParamTrimConfig {
 
 #### 接收`Request Body`中`JSON`或`XML`对象参数
 
-在这里,`Spring MVC` 是使用 `Jackson` 对参数进行反序列化,所以对于 `String` 的处理是在 `Jackson` 中配置
+在这里，`Spring MVC` 是使用 `Jackson` 对参数进行反序列化，所以对于 `String` 的处理是在 `Jackson` 中配置
 
 [如何自定义 Jackson ObjectMapper](https://docs.spring.io/spring-boot/docs/current-SNAPSHOT/reference/html/howto-spring-mvc.html#howto-customize-the-jackson-objectmapper)
 
@@ -47,13 +47,13 @@ public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomiz
     return new Jackson2ObjectMapperBuilderCustomizer() {
         @Override
         public void customize(Jackson2ObjectMapperBuilder jacksonObjectMapperBuilder) {
-          	// 为 String 类型自定义反序列化操作
+              // 为 String 类型自定义反序列化操作
             jacksonObjectMapperBuilder
                     .deserializerByType(String.class, new StdScalarDeserializer<String>(String.class) {
                         @Override
                         public String deserialize(JsonParser jsonParser, DeserializationContext ctx)
                                 throws IOException {
-                          	// 去除前后空格
+                              // 去除前后空格
                             return StringUtils.trimWhitespace(jsonParser.getValueAsString());
                         }
                     });
@@ -169,7 +169,7 @@ public class SpringMvcStringTrimSamplesApplicationTests {
 
 ### 重构
 
-对与这种所有项目都需要的通用配置,我们应该抽取一个公共模块,然后通过引入依赖来实现自动配置
+对与这种所有项目都需要的通用配置，我们应该抽取一个公共模块，然后通过引入依赖来实现自动配置
 
 创建 `commons` 模块
 
@@ -216,7 +216,7 @@ public class WebMvcStringTrimAutoConfiguration {
 
 ```
 
-配置引入依赖后存在 `SpringBootApplication` ,`EnableAutoConfiguration` 注解时自动配置
+配置引入依赖后存在 `SpringBootApplication` ，`EnableAutoConfiguration`注解时自动配置
 
 在 `resurces` 创建 `META-INF/spring.factories` 文件
 
