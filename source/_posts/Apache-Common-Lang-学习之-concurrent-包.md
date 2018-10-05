@@ -1004,7 +1004,7 @@ if (results.isSuccessful()) {
 ```java
 TimedSemaphore sem = new TimedSemaphore（1, TimeUnit.SECOND, 10）;
 StatisticsThread thread = new StatisticsThread（sem）;
-thread.start（）;
+thread.start();
 ```
 
 构造方法如下
