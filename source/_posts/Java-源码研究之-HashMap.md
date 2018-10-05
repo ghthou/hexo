@@ -7,7 +7,7 @@ categories:
   - Java
 date: 2018-01-13 13:09:00
 ---
-本文是在观看 [Java HashMap 工作原理及实现](http://yikun.github.io/2015/04/01/Java-HashMap%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%8F%8A%E5%AE%9E%E7%8E%B0/) 后,虽然大致了解了 `HashMap` 的工作原理及实现,但是对实现的具体过程,思路尚未贯通,所以对于其中的几个核心方法按照每个步骤进行研究,注释
+本文是在观看 [Java HashMap 工作原理及实现](http://yikun.github.io/2015/04/01/Java-HashMap%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%8F%8A%E5%AE%9E%E7%8E%B0/) 后，虽然大致了解了 `HashMap` 的工作原理及实现，但是对实现的具体过程，思路尚未贯通，所以对于其中的几个核心方法按照每个步骤进行研究，注释
 
 源码版本为`jdk1.8.0_91`
 
