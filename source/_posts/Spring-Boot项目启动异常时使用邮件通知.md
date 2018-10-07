@@ -189,17 +189,28 @@ x-start-exception:
 
 ### 测试
 
+新建一个业务异常
+
+```java
+public class BusinessException extends RuntimeException {
+
+    public BusinessException(String message) {
+        super(message);
+    }
+}
+```
+
 新建一个启动异常监听器 `ThrowExceptionListener` ，用于模拟启动时异常
 
 ```java
-public class ThrowExceptionListener implements ApplicationListener<ApplicationPreparedEvent> {
+public class ThrowExceptionListener implements ApplicationListener<ApplicationStartedEvent> {
 
     public static final String PROFILE = "throwException";
 
     @Override
-    public void onApplicationEvent(ApplicationPreparedEvent event) {
+    public void onApplicationEvent(ApplicationStartedEvent event) {
         if (event.getApplicationContext().getEnvironment().acceptsProfiles(PROFILE)) {
-            throw new RuntimeException("启动时出现异常");
+            throw new BusinessException("启动时出现异常");
         }
     }
 
@@ -233,7 +244,7 @@ public class StartExceptionHandleApplication {
 }
 ```
 
-此时启动 `main` 方法，发现控制台已经抛出自定义的 `RuntimeException` 异常
+此时启动 `main` 方法，发现控制台已经抛出自定义的 `BusinessException` 异常
 
 但是并没有发送邮件，同时也没有输出 `org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter#report` 中的格式化异常信息
 
@@ -253,7 +264,7 @@ private boolean report(FailureAnalysis analysis, ClassLoader classLoader) {
 }
 ```
 
-分析 `analysis` 参数的生成，原因是 Spring-Boot 默认的异常分析器中没有针对 `RuntimeException` 的异常分析器.所以导致 `analysis` 为空
+分析 `analysis` 参数的生成，原因是 Spring-Boot 默认的异常分析器中没有针对 `BusinessException` 的异常分析器.所以导致 `analysis` 为空
 
 ```java
 private FailureAnalysis analyze(Throwable failure, List<FailureAnalyzer> analyzers) {
@@ -274,32 +285,16 @@ private FailureAnalysis analyze(Throwable failure, List<FailureAnalyzer> analyze
 
 ### 修复
 
-此时我们添加一个针对 `Exception` 异常的分析器
+此时我们添加一个针对 `BusinessException` 异常的分析器
 
 ```java
-public class ExceptionFailureAnalyzer extends AbstractFailureAnalyzer<Exception> {
+public class BusinessExceptionFailureAnalyzer extends AbstractFailureAnalyzer<BusinessException> {
 
     @Override
-    protected FailureAnalysis analyze(Throwable rootFailure, Exception cause) {
-        return new FailureAnalysis(cause.getMessage(), cause.getMessage(), cause);
-    }
-}
-```
-
-通过 `org.springframework.boot.diagnostics.FailureAnalyzers#analyze` 的分析方法可知，当存在第一个有返回的 `FailureAnalysis` 时，会直接返回，所以针对 `Exception` 异常的 `FailureAnalyzer` 应该配置为在 `analyzers` 集合中的最后一个，通过 `analyzers` 的创建方法 `org.springframework.boot.diagnostics.FailureAnalyzers#loadFailureAnalyzers` 可知会对集合进行排序，所以需要实现一个 `Ordered` 接口，并配置顺序为最后一个
-
-```java
-public class ExceptionFailureAnalyzer extends AbstractFailureAnalyzer<Exception> implements Ordered {
-
-    @Override
-    protected FailureAnalysis analyze(Throwable rootFailure, Exception cause) {
+    protected FailureAnalysis analyze(Throwable rootFailure, BusinessException cause) {
         return new FailureAnalysis(cause.getMessage(), cause.getMessage(), cause);
     }
 
-    @Override
-    public int getOrder() {
-        return Ordered.LOWEST_PRECEDENCE;
-    }
 }
 ```
 
@@ -307,8 +302,12 @@ public class ExceptionFailureAnalyzer extends AbstractFailureAnalyzer<Exception>
 
 ```
 org.springframework.boot.diagnostics.FailureAnalyzer=\
-com.github.ghthou.startexceptionnotifications.diagnostics.analyzer.ExceptionFailureAnalyzer
+com.github.ghthou.startexceptionnotifications.diagnostics.analyzer.BusinessExceptionFailureAnalyzer
 ```
+
+由上可知，如果在启动过程出现未定义的异常 `FailureAnalyzer` ，则无法进行异常通知处理
+
+理论上应该定义一个针对 `Exception` 异常的 `FailureAnalyzer` ,但是在 `Spring-Boot` 对异常的分析中，自定义的总是排在第一个(其他 `FailureAnalyzer` 的默认顺序为`Integer.MAX_VALUE`)，所以如果定义`Exception` 类型的  `FailureAnalyzer`  会导致 `Spring-Boot` 无法使用预定义的其他 `FailureAnalyzer` 
 
 重新运行，发现还是无法发送邮件，通过 `debug` 发现是因为在 `com.github.ghthou.startexceptionnotifications.diagnostics.NotificationsFailureAnalysisReporter#report` 中 `Environment environment = ApplicationTools.getEnvironment();` 获取到的对象为 null 导致的
 

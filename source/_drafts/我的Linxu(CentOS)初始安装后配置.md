@@ -63,6 +63,7 @@ mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
 #### NTP
 
 ```bash
+sudo yum install ntp -y
 mv /etc/ntp.conf /etc/ntp.conf.backup
 
 echo "driftfile  /var/lib/ntp/drift" | tee /etc/ntp.conf
@@ -76,13 +77,24 @@ echo "fudge  127.127.1.0 stratum 10" | tee -a /etc/ntp.conf
 echo "server ntp.aliyun.com iburst minpoll 4 maxpoll 10" | tee -a /etc/ntp.conf
 echo "restrict ntp.aliyun.com nomodify notrap nopeer noquery" | tee -a /etc/ntp.conf
 
+sudo systemctl enable ntpd.service
 sudo systemctl restart ntpd.service
 ```
 
 #### 用户
 
 ```bash
-useradd prod
+useradd thou
+passwd thou
+usermod -aG wheel thou
+```
+
+#### fish
+
+```bash
+cd /etc/yum.repos.d/
+sudo wget https://download.opensuse.org/repositories/shells:fish:release:2/CentOS_7/shells:fish:release:2.repo
+sudo yum install -y fish
 ```
 
 #### 熵
@@ -134,7 +146,8 @@ sudo chmod +x /usr/local/bin/ncdu
 ##### 安装
 
 ```bash
-loc=/usr/local/bin/tldr  # elevated privileges needed for some locations
+sudo yum install -y coreutils grep unzip curl wget
+loc=/usr/local/bin/tldr
 sudo wget -O $loc https://4e4.win/tldr
 sudo chmod +x $loc
 ```
@@ -187,8 +200,9 @@ sudo yum install -y yum-utils \
   lvm2
 # 使用阿里云的 yum 镜像
 sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+#sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 sudo yum list docker-ce --showduplicates | sort -r  
-sudo yum install docker-ce-18.06.1.ce
+sudo yum install -y docker-ce-18.06.1.ce
 sudo systemctl start docker
 sudo systemctl enable docker
 docker version
