@@ -12,7 +12,7 @@ categories:
 
 但是通过 [Spring Boot  文档](https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-spring-application.html#boot-features-application-events-and-listeners)可知, 可以通过监听 `ApplicationFailedEvent` 事件进行启动异常处理
 
-> 6. An `ApplicationFailedEvent` is sent if there is an exception on startup.
+> 6 . An `ApplicationFailedEvent` is sent if there is an exception on startup.
 
 现在我们希望在出现这些异常时, 发送一封邮件到我预定义的邮箱中
 
