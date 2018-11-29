@@ -8,322 +8,215 @@ categories:
   - Java
 ---
 
-在本机进行 Spring-Boot 项目开发时，如果启动时出现异常，我们可以在控制台中明确得知异常相关信息然后进行处理.但是在远程的测试，生产服务器中，如果是后台启动或者通过 CI 启动项目，我们无法直接查看控制台中输出的日志信息.此时如果启动过程中出现异常我们无法及时得知
+在本机进行 Spring Boot 项目开发时，如果启动时出现异常，可以在控制台中明确得知异常相关信息然后进行处理.但在远程的测试、生产服务器中，一般是后台启动或者通过 CI 启动项目，无法直接查看控制台中输出的日志信息. 此时如果启动过程中出现异常我们无法及时得知
 
-现在我们可以使用 Spring-Boot 提供的 `FailureAnalysisReporter` 对启动过程中的异常进行处理，例如发送一份异常信息邮件到指定的邮箱中
+但是通过 [Spring Boot  文档](https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-spring-application.html#boot-features-application-events-and-listeners)可知, 可以通过监听 `ApplicationFailedEvent` 事件进行启动异常处理
 
-### 实现思路
+> 6. An `ApplicationFailedEvent` is sent if there is an exception on startup.
 
-在 Spring-Boot 项目中如果启动过程中出现异常，Spring-Boot 会在控制台输出格式化的异常描述信息
+现在我们希望在出现这些异常时, 发送一封邮件到我预定义的邮箱中
 
-比如常见的端口冲突，Spring-Boot 会输出如下信息
+#### 创建邮件工具类
 
-```log
-2018-09-25 20:09:47.386 ERROR 12828 --- [           main]   o.s.b.d.LoggingFailureAnalysisReporter.report(LoggingFailureAnalysisReporter.java:42) : 
+发送邮件我们使用 `spring-boot-starter-mail` 提供的 `JavaMailSender` 接口, 通过配置 `spring.mail` 系列参数 Spring Boot 会自动创建 `JavaMailSender` 
 
-***************************
-APPLICATION FAILED TO START
-***************************
+但是可能存在发生异常时 `JavaMailSender` 还没有创建,所以最好是由我们手动创建 `JavaMailSender` 对象
 
-Description:
-
-The Tomcat connector configured to listen on port 8080 failed to start. The port may already be in use or the connector may be misconfigured.
-
-Action:
-
-Verify the connector's configuration, identify and stop any process that's listening on port 8080, or configure this application to listen on another port.
-```
-
-可以发现 Spring-Boot 输出的异常信息相比异常栈更方便阅读，那么我们是否可以在 Spring-Boot 输出异常时同时将异常信息发送到指定邮箱中呢？
-
-### 实现分析
-
-通过上面的示例可知异常信息是由 `org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter#report` 方法进行输出
+以下是发送邮件工具类 `EmailUtils`
 
 ```java
-public void report(FailureAnalysis failureAnalysis) {
-    if (logger.isDebugEnabled()) {
-        logger.debug("Application failed to start due to an exception",
-                failureAnalysis.getCause());
+package com.github.ghthou.startexceptionnotifications.samples.util;
+
+import java.text.MessageFormat;
+import java.util.Properties;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.boot.context.event.ApplicationFailedEvent;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+
+import com.github.ghthou.startexceptionnotifications.samples.properties.NotificationsProperties;
+
+import lombok.SneakyThrows;
+
+public class EmailUtils {
+
+    public static final NotificationsProperties NOTIFICATIONS_PROPERTIES;
+    public static final JavaMailSender JAVA_MAIL_SENDER;
+
+    static {
+        NOTIFICATIONS_PROPERTIES = initNotificationsProperties();
+        JAVA_MAIL_SENDER = initJavaMailSender();
     }
-    if (logger.isErrorEnabled()) {
-        logger.error(buildMessage(failureAnalysis));
+
+    private static JavaMailSender initJavaMailSender() {
+        JavaMailSenderImpl sender = new JavaMailSenderImpl();
+        applyProperties(sender);
+        return sender;
     }
-}
-```
+    private static void applyProperties(JavaMailSenderImpl sender) {
+        NotificationsProperties properties = NOTIFICATIONS_PROPERTIES;
 
-通过 IDEA 的 `CTRL+B`（Declaration）快捷键可知该方法由`org.springframework.boot.diagnostics.FailureAnalyzers#report` 方法调用
-
-```java
-private boolean report(FailureAnalysis analysis, ClassLoader classLoader) {
-    List<FailureAnalysisReporter> reporters = SpringFactoriesLoader
-            .loadFactories(FailureAnalysisReporter.class, classLoader);
-    if (analysis == null || reporters.isEmpty()) {
-        return false;
+        sender.setHost(properties.getHost());
+        if (properties.getPort() != null) {
+            sender.setPort(properties.getPort());
+        }
+        sender.setUsername(properties.getUsername());
+        sender.setPassword(properties.getPassword());
+        sender.setProtocol(properties.getProtocol());
+        if (properties.getDefaultEncoding() != null) {
+            sender.setDefaultEncoding(properties.getDefaultEncoding());
+        }
+        if (!properties.getProperties().isEmpty()) {
+            sender.setJavaMailProperties(asProperties(properties.getProperties()));
+        }
     }
-    for (FailureAnalysisReporter reporter : reporters) {
-        reporter.report(analysis);
-    }
-    return true;
-}
-```
 
-分析该方法的源代码，可以发现 Spring-Boot 会从 `META-INF/spring.factories` 中加载 `FailureAnalysisReporter` 的所有实例，然后循环调用 `report` 方法
-
-而输出异常信息的 `LoggingFailureAnalysisReporter` 正是 `FailureAnalysisReporter` 的子类
-
-所以我们可以在 `META-INF/spring.factories` 新增一个`FailureAnalysisReporter` 实例，在该实例的实现中发送异常信息到指定邮箱
-
-### 具体实现
-
-新建一个 `NotificationsFailureAnalysisReporter` 类并实现 `FailureAnalysisReporter` 接口
-
-```java
-public class NotificationsFailureAnalysisReporter implements FailureAnalysisReporter {
-
-    /** 收件人key */
-    private static final String START_EXCEPTION_NOTIFY_EMAIL_KEY = "x-start-exception.mail.to";
-
-    private static final Logger log = LoggerFactory.getLogger(NotificationsFailureAnalysisReporter.class);
-
-    @Override
-    public void report(FailureAnalysis analysis) {
-        // 获取 Environment 对象
-        Environment environment = ApplicationTools.getEnvironment();
-        // 如果当前环境不是开发环境
-        if (!environment.acceptsProfiles(ProfileConstant.DEV)) {
-            BeanFactory beanFactory = ApplicationTools.getBeanFactory();
-            // 邮件发送 mailSender
-            JavaMailSender mailSender = beanFactory.getBean(JavaMailSender.class);
-            MailProperties mailProperties = beanFactory.getBean(MailProperties.class);
-
-            // 应用名称
-            String appName = environment.getProperty("spring.application.name");
-            // 收件人
-            String mailTo = environment.getProperty(START_EXCEPTION_NOTIFY_EMAIL_KEY);
-            if (!StringUtils.hasText(mailTo)) {
-                log.error("请配置接收启动异常信息的邮箱,配置参数为 {}", START_EXCEPTION_NOTIFY_EMAIL_KEY);
-                return;
+    private static Properties asProperties(String source) {
+        Properties properties = new Properties();
+        for (String pro : StringUtils.split(source, ",")) {
+            String[] split = StringUtils.split(pro, "=");
+            if (split.length == 2) {
+                properties.put(split[0], split[1]);
             }
-
-            SimpleMailMessage mailMessage = new SimpleMailMessage();
-            // 寄件人
-            mailMessage.setFrom("Spring-Boot <" + mailProperties.getUsername() + ">");
-            // 收件人
-            mailMessage.setTo(mailTo);
-            // 主题
-            mailMessage.setSubject(appName + " 启动异常");
-            // 内容
-            mailMessage.setText(buildMessage(analysis));
-            // 发送邮件
-            mailSender.send(mailMessage);
-
         }
-
+        return properties;
     }
 
-    /**
-     * 生成异常信息字符串
-     *
-     * @see LoggingFailureAnalysisReporter#buildMessage(org.springframework.boot.diagnostics.FailureAnalysis)
-     */
-    private String buildMessage(FailureAnalysis failureAnalysis) {
-        StringBuilder builder = new StringBuilder();
-        builder.append(String.format("***************************%n"));
-        builder.append(String.format("%s%n", ApplicationTools.getEnvironment().getProperty("spring.application.name")));
-        builder.append(String.format("***************************%n%n"));
-        builder.append(String.format("Description:%n%n"));
-        builder.append(String.format("%s%n", failureAnalysis.getDescription()));
-        if (StringUtils.hasText(failureAnalysis.getAction())) {
-            builder.append(String.format("%nAction:%n%n"));
-            builder.append(String.format("%s%n", failureAnalysis.getAction()));
-        }
-        builder.append(String.format("%nException StackTrace:%n%n"));
-        builder.append(String.format("%s%n", ExceptionUtils.getStackTrace(failureAnalysis.getCause())));
-        return builder.toString();
+    @SneakyThrows
+    private static NotificationsProperties initNotificationsProperties() {
+        Properties p = PropertiesLoaderUtils.loadProperties(new ClassPathResource("notifications.properties"));
+        NotificationsProperties notificationsProperties = new NotificationsProperties();
+        notificationsProperties.setAppName(p.getProperty("notifications.appName"));
+        notificationsProperties.setTo(p.getProperty("notifications.to"));
+        notificationsProperties.setHost(p.getProperty("notifications.host"));
+        notificationsProperties.setPort(Integer.valueOf(p.getProperty("notifications.port")));
+        notificationsProperties.setProtocol(p.getProperty("notifications.protocol"));
+        notificationsProperties.setUsername(p.getProperty("notifications.username"));
+        notificationsProperties.setPassword(p.getProperty("notifications.password"));
+        notificationsProperties.setDefaultEncoding(p.getProperty("notifications.defaultEncoding"));
+        notificationsProperties.setProperties(p.getProperty("notifications.properties"));
+        return notificationsProperties;
     }
+
+    private static JavaMailSender getJavaMailSender() {
+        return JAVA_MAIL_SENDER;
+    }
+
+    public static void send(SimpleMailMessage simpleMessage) {
+        getJavaMailSender().send(simpleMessage);
+    }
+
+    public static SimpleMailMessage createSimpleMailMessage(ApplicationFailedEvent event) {
+        SimpleMailMessage simpleMessage = new SimpleMailMessage();
+        // 发件人
+        simpleMessage.setFrom(MessageFormat.format("Spring Boot 启动异常 <{0}>", NOTIFICATIONS_PROPERTIES.getUsername()));
+        // 收件人
+        simpleMessage.setTo(NOTIFICATIONS_PROPERTIES.getTo());
+        // 主题
+        simpleMessage.setSubject(MessageFormat.format("{0} 启动异常", NOTIFICATIONS_PROPERTIES.getAppName()));
+        // 内容
+        simpleMessage.setText(ExceptionUtils.getStackTrace(event.getException()));
+        return simpleMessage;
+    }
+
 }
 
 ```
 
-在当前项目的 `resources` 文件夹创建 `META-INF/spring.factories` 文件
+#### 创建启动异常监听器
 
-在 `spring.factories` 文件中进行如下配置
-
-```
-org.springframework.boot.diagnostics.FailureAnalysisReporter=\
-com.github.ghthou.startexceptionnotifications.diagnostics.NotificationsFailureAnalysisReporter
-```
-
-新建 `application.yml` 文件，配置如下
-
-```yaml
-spring:
-  application:
-    # 应用名称,用于与其他应用进行区分
-    name: start-exception-notifications
-  mail:
-    # 邮箱服务器地址,如QQ邮箱的为 smtp.qq.com,阿里云企业邮箱的为 smtp.qiye.aliyun.com
-    host: smtp.example.com
-    # 发件人帐号
-    username: example@example.com
-    # 发件人密码
-    password: example
-    # 邮箱服务器端口
-    port: 465
-    # 邮件协议
-    protocol: smtp
-    # 默认字符编码
-    default-encoding: UTF-8
-    # 测试配置可用性
-    test-connection: true
-    # 如果使用加密端口需要添加下面的配置,否则不需要
-    properties:
-      mail.smtp.ssl.enable: true
-
-# 接收异常信息的收件人帐号
-x-start-exception:
-  mail:
-    to: example@example.com
-```
-
-### 测试
-
-新建一个业务异常
+然后创建一个 Spring 监听器 `StartExceptionNotificationsListener`,监听启动异常, 然后判断当前环境,如果不是 `dev` 环境,进行异常通知
 
 ```java
-public class BusinessException extends RuntimeException {
+package com.github.ghthou.startexceptionnotifications.samples.listener;
 
-    public BusinessException(String message) {
-        super(message);
-    }
-}
-```
+import org.springframework.boot.context.event.ApplicationFailedEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
 
-新建一个启动异常监听器 `ThrowExceptionListener` ，用于模拟启动时异常
+import com.github.ghthou.startexceptionnotifications.samples.util.EmailUtils;
 
-```java
-public class ThrowExceptionListener implements ApplicationListener<ApplicationStartedEvent> {
-
-    public static final String PROFILE = "throwException";
+public class StartExceptionNotificationsListener implements ApplicationListener<ApplicationFailedEvent> {
 
     @Override
-    public void onApplicationEvent(ApplicationStartedEvent event) {
-        if (event.getApplicationContext().getEnvironment().acceptsProfiles(PROFILE)) {
-            throw new BusinessException("启动时出现异常");
+    public void onApplicationEvent(ApplicationFailedEvent event) {
+        ConfigurableApplicationContext applicationContext = event.getApplicationContext();
+        // 如果不是 dev 环境,因为 dev 环境会查看控制台
+        if (applicationContext == null || applicationContext.getEnvironment().acceptsProfiles("!dev")) {
+            // 进行异常通知
+            EmailUtils.send(EmailUtils.createSimpleMailMessage(event));
         }
     }
-
 }
+
 ```
 
-在 `META-INF/spring.factories` 中追加以下配置
+#### 测试
+
+配置自动注册 `StartExceptionNotificationsListener`
+
+在 `resources/META-INF/spring.factories` 中进行以下配置
 
 ```
 org.springframework.context.ApplicationListener=\
-com.github.ghthou.startexceptionnotifications.listener.ThrowExceptionListener
+com.github.ghthou.startexceptionnotifications.samples.listener.StartExceptionNotificationsListener
 ```
 
-在 `application.yml` 中追加以下配置，`test`表明为测试环境，`throwException`表明为启动时抛出异常
+创建用于模拟启动过程中出现异常的启动监听器 `ApplicationStartingEventListener`,`ApplicationEnvironmentPreparedEventListener` 等
 
-```yaml
-spring:
-  profiles:
-    active: test,throwException
-```
-
-创建启动类
+然后在 `SpringApplication` 手动添加这些事件
 
 ```java
+package com.github.ghthou.startexceptionnotifications.samples;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
 @SpringBootApplication
-public class StartExceptionHandleApplication {
+public class StartExceptionNotificationsApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(StartExceptionHandleApplication.class, args);
+        SpringApplication springApplication = new SpringApplication(StartExceptionNotificationsApplication.class);
+        // 不触发
+        // springApplication.addListeners(new ApplicationStartingEventListener());
+        // 触发
+        // springApplication.addListeners(new ApplicationEnvironmentPreparedEventListener());
+        // 触发
+        // springApplication.addListeners(new ApplicationPreparedEventListener());
+        // 触发
+        // springApplication.addListeners(new ApplicationStartedEventListener());
+        // 不触发
+        // springApplication.addListeners(new ApplicationReadyEventListener());
+        springApplication.run(args);
     }
 }
-```
-
-此时启动 `main` 方法，发现控制台已经抛出自定义的 `BusinessException` 异常
-
-但是并没有发送邮件，同时也没有输出 `org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter#report` 中的格式化异常信息
-
-通过 `debug` 进行分析，发现原因是 `org.springframework.boot.diagnostics.FailureAnalyzers#report`  中 `analysis` 参数为空导致后面的代码没有运行
-
-```java
-private boolean report(FailureAnalysis analysis, ClassLoader classLoader) {
-    List<FailureAnalysisReporter> reporters = SpringFactoriesLoader
-            .loadFactories(FailureAnalysisReporter.class, classLoader);
-    if (analysis == null || reporters.isEmpty()) {
-        return false;
-    }
-    for (FailureAnalysisReporter reporter : reporters) {
-        reporter.report(analysis);
-    }
-    return true;
-}
-```
-
-分析 `analysis` 参数的生成，原因是 Spring-Boot 默认的异常分析器中没有针对 `BusinessException` 的异常分析器.所以导致 `analysis` 为空
-
-```java
-private FailureAnalysis analyze(Throwable failure, List<FailureAnalyzer> analyzers) {
-    for (FailureAnalyzer analyzer : analyzers) {
-        try {
-            FailureAnalysis analysis = analyzer.analyze(failure);
-            if (analysis != null) {
-                return analysis;
-            }
-        }
-        catch (Throwable ex) {
-            logger.debug("FailureAnalyzer " + analyzer + " failed", ex);
-        }
-    }
-    return null;
-}
-```
-
-### 修复
-
-此时我们添加一个针对 `BusinessException` 异常的分析器
-
-```java
-public class BusinessExceptionFailureAnalyzer extends AbstractFailureAnalyzer<BusinessException> {
-
-    @Override
-    protected FailureAnalysis analyze(Throwable rootFailure, BusinessException cause) {
-        return new FailureAnalysis(cause.getMessage(), cause.getMessage(), cause);
-    }
-
-}
-```
-
-在 `META-INF/spring.factories` 中追加以下配置
 
 ```
-org.springframework.boot.diagnostics.FailureAnalyzer=\
-com.github.ghthou.startexceptionnotifications.diagnostics.analyzer.BusinessExceptionFailureAnalyzer
-```
 
-由上可知，如果在启动过程出现未定义的异常 `FailureAnalyzer` ，则无法进行异常通知处理
+#### 测试结果
 
-理论上应该定义一个针对 `Exception` 异常的 `FailureAnalyzer` ,但是在 `Spring-Boot` 对异常的分析中，自定义的总是排在第一个(其他 `FailureAnalyzer` 的默认顺序为`Integer.MAX_VALUE`)，所以如果定义`Exception` 类型的  `FailureAnalyzer`  会导致 `Spring-Boot` 无法使用预定义的其他 `FailureAnalyzer` 
+最后通过测试结果可知
 
-重新运行，发现还是无法发送邮件，通过 `debug` 发现是因为在 `com.github.ghthou.startexceptionnotifications.diagnostics.NotificationsFailureAnalysisReporter#report` 中 `Environment environment = ApplicationTools.getEnvironment();` 获取到的对象为 null 导致的
+- [ ] ApplicationStartingEvent
+- [x] ApplicationEnvironmentPreparedEvent
+- [x] ApplicationPreparedEvent
+- [x] ApplicationStartedEvent
+- [ ] ApplicationReadyEvent
 
-这是因为抛出异常的 `ThrowExceptionListener` 是在 `ApplicationPreparedEvent` 事件后触发的，根据 [Spring-Boot 应用事件和监听器](https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-spring-application.html#boot-features-application-events-and-listeners) 可知此时上下文还没有刷新，所以 `ApplicationTools` 中的对象还没有注入导致的空指针异常
+三个事件会进行 `ApplicationFailedEvent` 事件处理, 不过 `ApplicationStartingEvent` 事件一般不会产生异常, 而 `ApplicationReadyEvent` 是启动完成后触发的事件
 
-此时将 `ThrowExceptionListener` 所在的事件位置改为 `ApplicationStartedEvent` 即可解决该问题
+#### 拓展
 
-由此可知如果异常是在 `ApplicationStartedEvent` 事件发生之前，则无法发送邮件
+目前是使用 email 通知, 如果希望使用 短信,微信,钉钉 通知的话, 在 `StartExceptionNotificationsListener` 中自定义通知处理即可
 
-还有一种办法就是手动创建发送邮件的相关 `bean` ，比如解析配置文件中的邮件配置，然后创建 `JavaMailSender` 对象（见 `MailSenderPropertiesConfiguration`），再执行发送邮件操作，这样可以不依赖 `Environment`，`BeanFactory` 等对象
+#### 源码
 
-同时如果觉得邮件通知不够及时或不够多样，你也可以在 `NotificationsFailureAnalysisReporter.report` 方法中自定义通知处理，比如发送短信，微信，钉钉通知等
-
-### 源码
-
-[GitHub](https://github.com/ghthou/spring-boot-start-exception-notifications)
+[GitHub](https://github.com/ghthou/spring-boot-start-exception-notifications-samples)
 
 
 

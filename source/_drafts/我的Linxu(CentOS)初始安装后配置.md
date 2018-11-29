@@ -63,6 +63,9 @@ mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
 #### NTP
 
 ```bash
+TZ=Asia/Shanghai
+ln -sf /usr/share/zoneinfo/$TZ /etc/localtime \
+    && echo $TZ > /etc/timezone
 sudo yum install ntp -y
 mv /etc/ntp.conf /etc/ntp.conf.backup
 
@@ -161,7 +164,7 @@ sudo chmod +x $loc
 ##### 安装
 
 ```bash
-sudo wget -O /tmp/safe-rm.sh https://github.com/kaelzhang/shell-safe-rm/blob/master/bin/rm.sh
+sudo wget -O /tmp/safe-rm.sh https://raw.githubusercontent.com/kaelzhang/shell-safe-rm/master/bin/rm.sh
 sudo cp /tmp/safe-rm.sh /usr/local/bin/rm
 sudo chmod 755 /usr/local/bin/rm
 sudo cp /usr/bin/rm /usr/local/bin/rmo
@@ -219,6 +222,8 @@ sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 # 自动补全 https://docs.docker.com/compose/completion/
 sudo curl -L https://raw.githubusercontent.com/docker/compose/1.22.0/contrib/completion/bash/docker-compose -o /etc/bash_completion.d/docker-compose
+docker swarm init
+docker network create -d overlay --attachable swarm_webnet
 ```
 
 ### 参考资料
