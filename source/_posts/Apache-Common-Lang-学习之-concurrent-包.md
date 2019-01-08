@@ -1002,8 +1002,8 @@ if (results.isSuccessful()) {
 下面的代码片段显示了如何创建一个每秒只允许 10 次的 `TimedSemaphore` 并传递给统计线程 `StatisticsThread`
 
 ```java
-TimedSemaphore sem = new TimedSemaphore（1, TimeUnit.SECOND, 10）;
-StatisticsThread thread = new StatisticsThread（sem）;
+TimedSemaphore sem = new TimedSemaphore(1, TimeUnit.SECONDS, 10);
+StatisticsThread thread = new StatisticsThread(sem);
 thread.start();
 ```
 
@@ -1022,7 +1022,7 @@ public TimedSemaphore(final long timePeriod, final TimeUnit timeUnit, final int 
 public TimedSemaphore(final ScheduledExecutorService service, final long timePeriod,final TimeUnit timeUnit, final int limit)
 ```
 
-所以 `new TimedSemaphore（1, TimeUnit.SECOND, 10）;`  含义是在 `timePeriod(1) * timeUnit(TimeUnit.SECOND) = 1秒` 的时间内只发放 `limit(10)` 个许可
+所以 `new TimedSemaphore(1, TimeUnit.SECOND, 10);`  含义是在 `timePeriod(1) * timeUnit(TimeUnit.SECOND) = 1秒` 的时间内只发放 `limit(10)` 个许可
 
 在使用时需要在限制操作前调用 `acquire()`方法。 `TimedSemaphore` 会统计调用 `acquire()` 的次数，并在许可达到上限后阻塞当前线程，直到时间周期结束后释放所有许可，此时再进行许可获取
 
