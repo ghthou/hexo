@@ -1,3 +1,5 @@
+# https://hexo.io/zh-cn/docs/github-pages.html
+# https://docs.travis-ci.com/user/deployment/pages/
 sudo: false
 language: node_js
 node_js:
@@ -19,3 +21,5 @@ deploy:
   local-dir: public
   repo: ghthou/ghthou.github.io
   target_branch: master
+  name: ghthou
+  email: $GITHUB_EMAIL
