@@ -4,8 +4,8 @@
 
 # Site
 title: ghthou
-subtitle: 
-description: 
+subtitle:
+description:
 author: ghthou
 language: zh-Hans
 timezone: Asia/Shanghai
@@ -43,7 +43,7 @@ highlight:
   line_number: true
   auto_detect: false
   tab_replace:
-  
+
 # Home page setting
 # path: Root path for your blogs index page. (default = '')
 # per_page: Posts displayed per page. (0 = disable pagination)
@@ -52,7 +52,7 @@ index_generator:
   path: ''
   per_page: 10
   order_by: -date
-  
+
 # Category & Tag
 default_category: uncategorized
 category_map:
@@ -79,7 +79,7 @@ theme: next
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repo: git@github.com:ghthou/ghthou.github.io.git
+  repo: https://github.com/ghthou/ghthou.github.io
   branch: master
   message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"
   name: ghthou
