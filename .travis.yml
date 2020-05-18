@@ -17,6 +17,6 @@ deploy:
   on:
     branch: master
   local-dir: public
-  repo: https://github.com/ghthou/ghthou.github.io
+  repo: ghthou/ghthou.github.io
   target_branch: master
   committer_from_gh: true
