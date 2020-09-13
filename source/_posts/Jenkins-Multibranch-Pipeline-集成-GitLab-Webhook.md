@@ -18,7 +18,7 @@ date: 2020-09-13 11:08:00
 
 并在该项目根路径创建一个 Jenkinsfile 文件, 文件内容如下
 
-```groovy ,
+```groovy
 pipeline {
     agent any
     // 触发器, 默认存在三种, 但是不满足 Webhook 需求, 所以使用插件提供的 GenericTrigger 触发器
