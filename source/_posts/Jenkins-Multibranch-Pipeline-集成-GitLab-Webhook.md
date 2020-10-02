@@ -35,9 +35,9 @@ pipeline {
                         // 提取用户显示名称
                         [key: 'WEBHOOK_USER_NAME', value: '$.user_name'],
                         // 提取最近提交 id
-                        [key: 'WEBHOOK_RECENT_COMMIT_ID', value: '$.commits[0].id'],
+                        [key: 'WEBHOOK_RECENT_COMMIT_ID', value: '$.commits[-1].id'],
                         // 提取最近提交 message
-                        [key: 'WEBHOOK_RECENT_COMMIT_MESSAGE', value: '$.commits[0].message'],
+                        [key: 'WEBHOOK_RECENT_COMMIT_MESSAGE', value: '$.commits[-1].message'],
                         // 如需更多参数可通过查看 request body 参数文档进行提取
                 ],
 
